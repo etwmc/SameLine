@@ -21,13 +21,17 @@ T_Components: T_Components T_Component {
 T_Component: T_SectionConf|T_SectionPop|T_CaseLine|T_TestLine|T_Code|T_Setup|T_Break { }
 
 T_SectionConf: T_Section T_Break  {
-    TestSection *conf = currentSection->subSection[buffer];
-    if (conf == NULL) { conf = new TestSection(); currentSection->subSection[buffer] = conf; }
-    conf->name = buffer;
-    conf->parentSection = currentSection;
-    currentSection = conf;
-    printf("Test: %s\n", buffer.c_str());
-    buffer = "";
+    if (buffer.length() > 0) {
+        TestSection *conf = currentSection->subSection[buffer];
+        if (conf == NULL) { conf = new TestSection(); currentSection->subSection[buffer] = conf; }
+        conf->name = buffer;
+        conf->parentSection = currentSection;
+        currentSection = conf;
+        printf("Test: %s\n", buffer.c_str());
+        buffer = "";
+    } else {
+        currentSection = rootSection;
+    }
 }
 
 T_Setup: T_TestSetup T_Break {

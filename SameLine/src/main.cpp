@@ -24,6 +24,36 @@ string JS_headerLv(int indentLv) {
     return "h"+to_string(indentLv+2);
 }
 
+string filenameAppend(string original, string tag) {
+    size_t found = original.rfind("/");
+    if (found == string::npos) {
+        //Not found
+        return tag+original;
+    } else {
+        return string(original, 0, found+1) + tag + string(original, found+1);
+    }
+}
+
+string filenameStrip(string original) {
+    size_t found = original.rfind("/");
+    if (found == string::npos) {
+        //Not found
+        return original;
+    } else {
+        return string(original, found+1);
+    }
+}
+
+string directotyStrip(string original) {
+    size_t found = original.rfind("/");
+    if (found == string::npos) {
+        //Not found
+        return "";
+    } else {
+        return string(original, 0, found+1);
+    }
+}
+
 //String operation
 string operator *(string source, unsigned int time) {
     string result;
@@ -229,7 +259,7 @@ int main(int argc, const char * argv[]) {
     
     languageType type;
     
-    vector<string> filenames;
+    vector<string> testFilenames;
     
     for (int i = 1; i < argc; i++) {
         //The last item must be the filename
@@ -242,21 +272,23 @@ int main(int argc, const char * argv[]) {
         string fileNameStr = "";
         fileNameStr += filename;
         
-        filenames.push_back(filename);
-        
         string extension = fileNameStr.substr(fileNameStr.rfind('.')+1);
         
         type = extToLang(extension);
         
-        initSection(filename);
+        initSection( filenameStrip(filename) );
         
         int parseRes = yyparse();
+        
+        if (argc < 2) {
+            printf("SameLine filePath....\n");
+            exit(1);
+        }
         
         if (parseRes == 0) {
             {
                 //Write the main code section
-                string newFileName = "stripped_";
-                newFileName += filename;
+                string newFileName = filenameAppend(filename, "stripped_");
                 FILE *input = fopen(newFileName.c_str(), "w");
                 fwrite(code.c_str(), sizeof(char), code.length(), input);
                 fclose(input);
@@ -265,10 +297,11 @@ int main(int argc, const char * argv[]) {
                 //Add the test
                 testName.push_back("TestSection_"+rootSection->name);
                 //Write the test file
-                string newFileName = "test_";
-                newFileName += filename;
+                string newFileName = filenameAppend(filename, "test_");
                 FILE *input = fopen(newFileName.c_str(), "w");
                 fwrite(code.c_str(), sizeof(char), code.length(), input);
+                
+                testFilenames.push_back(newFileName);
                 
                 {
                     //Add the test cases
@@ -295,7 +328,7 @@ int main(int argc, const char * argv[]) {
     
     //C/C++, need a separate main function
     if (type != languageType_JS) {
-        FILE *testMain = fopen( ("test."+langToExt(type)).c_str(), "w");
+        FILE *testMain = fopen( (directotyStrip(string(argv[1]))+"test."+langToExt(type)).c_str(), "w");
         string result = "//Declartion\n";
         for (auto it = testName.begin(); it != testName.end(); it++) {
             result += funcHeader(type, *it);
@@ -313,8 +346,8 @@ int main(int argc, const char * argv[]) {
     } else {
         FILE *testMain = fopen( ("test."+langToMainExt(type)).c_str(), "w");
         string result = "<html>\n\t<head />\n\t<body>\n";
-        for (auto it = filenames.begin(); it != filenames.end(); it++) {
-            result += "\t\t<script src=\"test_"+*it+"\"> </script>\n";
+        for (auto it = testFilenames.begin(); it != testFilenames.end(); it++) {
+            result += "\t\t<script src=\""+*it+"\"> </script>\n";
         }
         
         string body;

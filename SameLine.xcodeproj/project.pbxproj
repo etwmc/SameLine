@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		33342AFC1DBDD8CE001996F4 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 33342AFB1DBDD8CE001996F4 /* README.md */; };
 		33E1C97D1DB9B0A800BA201A /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33E1C9791DB9B0A800BA201A /* main.cpp */; };
 		33E1C97E1DB9B0A800BA201A /* parser.lpp in Sources */ = {isa = PBXBuildFile; fileRef = 33E1C97B1DB9B0A800BA201A /* parser.lpp */; };
 		33E1C97F1DB9B0A800BA201A /* parser.ypp in Sources */ = {isa = PBXBuildFile; fileRef = 33E1C97C1DB9B0A800BA201A /* parser.ypp */; };
@@ -26,6 +27,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		33342AFB1DBDD8CE001996F4 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		335AB0EC1D96101A001725F2 /* SameLine */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SameLine; sourceTree = BUILT_PRODUCTS_DIR; };
 		33E1C9791DB9B0A800BA201A /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		33E1C97A1DB9B0A800BA201A /* parser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = parser.hpp; sourceTree = "<group>"; };
@@ -49,6 +51,7 @@
 		335AB0E31D96101A001725F2 = {
 			isa = PBXGroup;
 			children = (
+				33342AFB1DBDD8CE001996F4 /* README.md */,
 				335AB0EE1D96101A001725F2 /* SameLine */,
 				335AB0ED1D96101A001725F2 /* Products */,
 			);
@@ -153,6 +156,7 @@
 			files = (
 				33E1C97D1DB9B0A800BA201A /* main.cpp in Sources */,
 				33E1C97E1DB9B0A800BA201A /* parser.lpp in Sources */,
+				33342AFC1DBDD8CE001996F4 /* README.md in Sources */,
 				33E1C9831DB9B0C300BA201A /* bootupTest.c in Sources */,
 				33E1C97F1DB9B0A800BA201A /* parser.ypp in Sources */,
 			);
