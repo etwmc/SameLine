@@ -1,7 +1,10 @@
 # SameLine
-No one like switching between source code and test code to see what's wrong, or spend time writing test code after writing finish writing the code itself. So why not write them together?  
+No one like switching between source code and test code to see what's wrong, or spend time writing test code after writing the code itself. So why not write them together?  
 Same Line is a preprocessor/parser that let you write unit test just like writing comments on the function: same file, same location, together. Before compiling the code, just use SameLine to extract all the test code, written in the form of comments, and generate the correspondent test case. 
-And because it's written in comment format, so it will backward compaible if you choose not to use it in the future.  
+And because it's written in comment format, so it will backward compaible if you choose not to use it in the future.
+
+# Language support
+C, C++, Objective C, Objective C++, Swift, Javascript (beta)
 
 # Grammar Strucutre
 A test in SameLine has three parts: section, case, and the code itself.
@@ -26,8 +29,9 @@ A test code is declare as "//Test: testCode [actual code]". If the language does
 
 # Run
 SameLine [all the files you are inputting]
-C/C++: All the C/C++ source files will generate a test_[filename] file, and a test.c/cpp. Then, compile all the generated file using a compiler, and execute the binary. 
+C/C++/Objective-C/Objective-C++: All the C/C++ source files will generate a test_[filename] file, and a test.c/cpp. Then, compile all the generated file using a compiler, and execute the binary. 
 Javascript: Open test.html
+Swift: Similar to C/C++, with swiftc as the compiler 
 
 #Sample output
 C/C++ [example/bootupTest.c]:
@@ -53,3 +57,7 @@ bootupTest
 #Tools for compile
 Currently: Xcode
 Makefile compile will come in the next push
+
+#Known issue
+Don't support multiple language at once yet
+Don't support cross directoy for JS

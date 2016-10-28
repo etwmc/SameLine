@@ -34,7 +34,7 @@
 sectionTag          "//Test: section start "
 unmarkSectionTag    "//Test: section stop"
 testNameTag         "//Test: case "
-testEndTag         "//Test: endCase"
+testEndTag          "//Test: endCase"
 testSetupTag        "//Test: setup "
 testCodeTag         "//Test: testCode "
 
@@ -42,6 +42,7 @@ newLine             "\n"
 
 %%
 {sectionTag}    {
+    buffer = "";
     if (tagState) REJECT;
     tagState = true;
     funcName = true;
@@ -49,6 +50,7 @@ newLine             "\n"
 }
 
 {unmarkSectionTag}   {
+    buffer = "";
     if (tagState) REJECT;
     tagState = true;
     funcName = false;
@@ -56,6 +58,7 @@ newLine             "\n"
 }
 
 {testNameTag}   {
+    buffer = "";
     if (tagState) REJECT;
     tagState = true;
     funcName = true;
@@ -63,6 +66,7 @@ newLine             "\n"
 }
 
 {testSetupTag}   {
+    buffer = "";
     if (tagState) REJECT;
     tagState = true;
     funcName = false;
@@ -70,6 +74,7 @@ newLine             "\n"
 }
 
 {testEndTag}    {
+    buffer = "";
     if (tagState) REJECT;
     tagState = true;
     funcName = false;
@@ -77,6 +82,7 @@ newLine             "\n"
 }
 
 {testCodeTag}   {
+    buffer = "";
     if (tagState) REJECT;
     tagState = true;
     funcName = false;
@@ -84,6 +90,7 @@ newLine             "\n"
 }
 
 {newLine}       {
+    funcName = false;
     if (tagState) {
         tagState = false;
         return T_NewLine;
@@ -91,7 +98,6 @@ newLine             "\n"
         buffer +=yytext;
         return T_String;
     }
-    funcName = false;
 }
 
 <<EOF>>         {

@@ -64,7 +64,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "example/bootupTest.c"
+            argument = "example/bootupTest.js"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

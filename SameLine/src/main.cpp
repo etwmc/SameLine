@@ -15,7 +15,10 @@
 typedef enum {
     languageType_C,
     languageType_CPP,
+    languageType_Obj_C,
+    languageType_Obj_CPP,
     languageType_JS,
+    languageType_Swift,
     languageType_Unknown,
 } languageType;
 
@@ -63,14 +66,21 @@ string operator *(string source, unsigned int time) {
     return result;
 }
 
+//Language specific
 languageType extToLang(string extension) {
     std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-    if (extension == "c" || extension == "m")
+    if (extension == "c")
         return languageType_C;
-    if (extension == "cpp" || extension == "mm")
+    if (extension == "cpp")
         return languageType_CPP;
+    if (extension == "m")
+        return languageType_Obj_C;
+    if (extension == "mm")
+        return languageType_Obj_CPP;
     if (extension == "js")
         return languageType_JS;
+    if (extension == "swift")
+        return languageType_Swift;
     return languageType_Unknown;
 }
 
@@ -78,34 +88,38 @@ string langToExt(languageType type) {
     switch (type) {
         case languageType_C:
             return "c";
-            break;
         case languageType_CPP:
             return "cpp";
-            break;
+        case languageType_Obj_C:
+            return "m";
+        case languageType_Obj_CPP:
+            return "mm";
         case languageType_JS:
             return "js";
-            break;
+        case languageType_Swift:
+            return "swift";
         default:
-            break;
+            return "";
     }
-    return "";
 }
 
 string langToMainExt(languageType type) {
     switch (type) {
         case languageType_C:
             return "c";
-            break;
         case languageType_CPP:
             return "cpp";
-            break;
+        case languageType_Obj_C:
+            return "m";
+        case languageType_Obj_CPP:
+            return "mm";
         case languageType_JS:
             return "html";
-            break;
+        case languageType_Swift:
+            return "swift";
         default:
-            break;
+            return "";
     }
-    return "";
 }
 
 string funcBody(languageType type, string funcName, string funcBody, string returnType) {
@@ -113,6 +127,8 @@ string funcBody(languageType type, string funcName, string funcBody, string retu
     switch (type) {
         case languageType_C:
         case languageType_CPP:
+        case languageType_Obj_C:
+        case languageType_Obj_CPP:
             result = returnType+" "+funcName+"(){\n";
             result += funcBody;
             result += "}\n";
@@ -121,6 +137,12 @@ string funcBody(languageType type, string funcName, string funcBody, string retu
             result = "function " + funcName +"(){\n";
             result += funcBody;
             result += "}\n";
+            break;
+        case languageType_Swift:
+            result = "func " + funcName + "(){\n";
+            result += funcBody;
+            result += "}\n";
+            break;
         default:
             break;
     }
@@ -132,10 +154,13 @@ string funcHeader(languageType type, string funcName) {
     switch (type) {
         case languageType_C:
         case languageType_CPP:
+        case languageType_Obj_C:
+        case languageType_Obj_CPP:
             result = "void "+funcName+"();\n";
             break;
         case languageType_JS:
             result = "function " + funcName +"();\n";
+            break;
         default:
             break;
     }
@@ -147,21 +172,34 @@ string printRaw(languageType type, string content) {
     switch (type) {
         case languageType_C:
         case languageType_CPP:
-            result = "printf(\""+content+"\");\n";
+            result = "printf(\""+content+"\");";
+            break;
+        case languageType_Obj_C:
+        case languageType_Obj_CPP:
+            result = "NSLog(@\"" + content + "\");";
             break;
         case languageType_JS:
-            result = "document.write(\""+content+"\");\n";
+            result = "document.write(\""+content+"\");";
+            break;
+        case languageType_Swift:
+            result = "print(\""+content+"\");";
+            break;
         default:
             break;
     }
-    return result;
+    return result+"\n";
 }
 
 string printLine(languageType type, int indentLv, string content) {
     switch (type) {
         case languageType_C:
         case languageType_CPP:
+        case languageType_Obj_C:
+        case languageType_Obj_CPP:
             content = string(indentLv, '\t')+content+"\\n";
+            break;
+        case languageType_Swift:
+            content = string("\\t")*indentLv+content+"\\n";
             break;
         case languageType_JS:
             content = string("&emsp;")*indentLv+content+"<br>";
@@ -183,12 +221,93 @@ string printHeader(languageType type, int indentLv, string headerName) {
     }
 }
 
+string include(languageType type, string file) {
+    switch (type) {
+        case languageType_JS:
+            return "<script src=\""+file+"\"> </script>";
+            break;
+        default:
+            return "";
+            break;
+    }
+}
+
+string runFunc(languageType type, string funcName) {
+    switch (type) {
+        case languageType_Swift:
+            return funcName+"()";
+        default:
+            return funcName+"();";
+    }
+}
+
+string mainFunction(languageType type, vector<string>include, vector<string>lines) {
+    switch (type) {
+        case languageType_C:
+        case languageType_CPP:
+        case languageType_Obj_C:
+        case languageType_Obj_CPP:
+        {
+            //Need main function
+            string body = "";
+            
+            if (include.size())
+                body += "//Declartion\n";
+            for (auto it = include.begin(); it != include.end(); it++) {
+                body += "\t" + *it + "\n";
+            }
+            
+            if (lines.size())
+                body += "//Test\n";
+            for (auto it = lines.begin(); it != lines.end(); it++) {
+                body += "\t" + *it + "\n";
+            }
+            return funcBody(type, "main", body, "int");
+        }
+            break;
+        case languageType_JS: {
+            string result = "<html>\n\t<head />\n\t<body>\n";
+            
+            if (include.size())
+                result += "\t\t<!--Declartion-->\n";
+            for (auto it = include.begin(); it != include.end(); it++) {
+                result += "\t\t"+*it + "\n" ;
+            }
+            
+            string body;
+            if (lines.size())
+                body += "\t\t\t//Test\n";
+            for (auto it = lines.begin(); it != lines.end(); it++) {
+                body += "\t\t\t"+*it+"\n";
+            }
+            result += "\t\t<script type=\"text/javascript\">\n"+body+"\t\t</script>\n";
+            result += "\t</body>\n</html>";
+            return result;
+        }
+        case languageType_Swift:
+        {
+            //No need for main function, just print it out
+            string body = "";
+            if (lines.size())
+                body += "//Test\n";
+            for (auto it = lines.begin(); it != lines.end(); it++) {
+                body += *it + "\n";
+            }
+            return body;
+        }
+        default:
+            return "";
+            break;
+    }
+}
+
+//Test generation
 string genTestCode(struct TestCode *code, int indentLv, string filename, languageType type) {
     
-    return "\tif (("+code->content+"))\n"
+    return "\tif (("+code->content+")) {\n"
     + "\t\t"+printLine(type, indentLv, "Success on line " + to_string(code->lineNum) + " in " + filename)
-    + "\telse\n"
-    + "\t\t"+printLine(type, indentLv, "Error on line " + to_string(code->lineNum) + " in " + filename)
+    + "\t} else {\n"
+    + "\t\t"+printLine(type, indentLv, "Error on line " + to_string(code->lineNum) + " in " + filename) + "}\n"
     ;
 }
 
@@ -203,10 +322,14 @@ string genTestCase(struct TestCase *c, int indentLevel, string prefix, string se
     if (name.size() > 0) name += "_";
     name += c->name;
     string body = "\t//Setup\n"+allSetup;
+    
+    //Print test name
+    body += "\n\t" + printLine(type, indentLevel, "Test Case: "+c->name);
+    
     for (auto it = c->codes.begin(); it != c->codes.end(); it++) {
         body += "\n\t//Code";
         //Call test case
-        body += "\n" + genTestCode(*it, indentLevel, filename, type);
+        body += "\n" + genTestCode(*it, indentLevel+1, filename, type);
         
     }
     
@@ -239,7 +362,7 @@ string genTestSection(struct TestSection *section, int indentLevel, string prefi
         funcCall.push_back("\tTestSection_"+name+"_"+it->second->name+"();\n");
     }
     //Generate the test function
-    string body = printHeader(type, indentLevel, section->name);
+    string body = "\t"+printHeader(type, indentLevel, section->name);
     for (auto it = funcCall.begin(); it != funcCall.end(); it++) {
         //Call test case
         body += *it;
@@ -301,7 +424,7 @@ int main(int argc, const char * argv[]) {
                 FILE *input = fopen(newFileName.c_str(), "w");
                 fwrite(code.c_str(), sizeof(char), code.length(), input);
                 
-                testFilenames.push_back(newFileName);
+                testFilenames.push_back(filenameStrip(newFileName));
                 
                 {
                     //Add the test cases
@@ -309,17 +432,17 @@ int main(int argc, const char * argv[]) {
                     fwrite(testSection.c_str(), sizeof(char), testSection.size(), input);
                 }
                 
-                if (type == languageType_JS) {
-                    //Javascript
-                    string result;
-                    string body;
-                    for (auto it = testName.begin(); it != testName.end(); it++) {
-                        body += "\t"+*it+"();\n";
-                    }
-                    result += funcBody(type, "main", body, "int");
-                    
-                    fwrite(result.c_str(), sizeof(char), result.size(), input);
-                }
+//                if (type == languageType_JS) {
+//                    //Javascript
+//                    string result;
+//                    string body;
+//                    for (auto it = testName.begin(); it != testName.end(); it++) {
+//                        body += "\t"+*it+"();\n";
+//                    }
+//                    result += funcBody(type, "main", body, "int");
+//                    
+//                    fwrite(result.c_str(), sizeof(char), result.size(), input);
+//                }
                 
                 fclose(input);
             }
@@ -327,39 +450,21 @@ int main(int argc, const char * argv[]) {
     }
     
     //C/C++, need a separate main function
-    if (type != languageType_JS) {
-        FILE *testMain = fopen( (directotyStrip(string(argv[1]))+"test."+langToExt(type)).c_str(), "w");
-        string result = "//Declartion\n";
-        for (auto it = testName.begin(); it != testName.end(); it++) {
-            result += funcHeader(type, *it);
-        }
-        result += "\n\n//Test\n";
-        
-        string body;
-        for (auto it = testName.begin(); it != testName.end(); it++) {
-            body += "\t"+*it+"();\n";
-        }
-        
-        result += funcBody(type, "main", body, "int");
-        fwrite(result.c_str(), sizeof(char), result.length(), testMain);
-        fclose(testMain);
-    } else {
-        FILE *testMain = fopen( ("test."+langToMainExt(type)).c_str(), "w");
-        string result = "<html>\n\t<head />\n\t<body>\n";
-        for (auto it = testFilenames.begin(); it != testFilenames.end(); it++) {
-            result += "\t\t<script src=\""+*it+"\"> </script>\n";
-        }
-        
-        string body;
-        for (auto it = testName.begin(); it != testName.end(); it++) {
-            body += "\t\t"+*it+"();\n";
-        }
-        
-        result += "\t\t<script type=\"text/javascript\">\n"+body+"\t\t</script>\n";
-        result += "\t</body>\n</html>";
-        fwrite(result.c_str(), sizeof(char), result.length(), testMain);
-        fclose(testMain);
+    //First import the includes
+    vector<string> includes;
+    for (auto it = testFilenames.begin(); it != testFilenames.end(); it++) {
+        string includeStmt = include(type, *it);
+        if (includeStmt.length() > 0) includes.push_back(includeStmt);
+    }
+    //Then how to run
+    vector<string> codes;
+    for (auto it = testName.begin(); it != testName.end(); it++) {
+        codes.push_back( runFunc(type, *it) );
     }
     
+    string mainStr = mainFunction(type, includes, codes);
+    FILE *testMain = fopen( (directotyStrip(string(argv[1]))+"test."+langToMainExt(type)).c_str(), "w");
+    fwrite(mainStr.c_str(), sizeof(char), mainStr.length(), testMain);
+    fclose(testMain);
     return 0;
-}
+    }
